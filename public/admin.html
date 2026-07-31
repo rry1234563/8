@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - AI问答助手</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🤖</span>
+                <h2>管理后台</h2>
+            </div>
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <nav class="nav-menu" id="navMenu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span>📊</span> 数据概览
+                </a>
+                <a href="#" class="nav-item" data-page="preset-qa">
+                    <span>💡</span> 预设问答
+                </a>
+                <a href="#" class="nav-item" data-page="conversations">
+                    <span>💬</span> 对话记录
+                </a>
+                <a href="#" class="nav-item" data-page="assessments">
+                    <span>📝</span> 测评记录
+                </a>
+                <a href="#" class="nav-item" data-page="abnormal">
+                    <span>⚠️</span> 异常记录
+                </a>
+                <a href="#" class="nav-item" data-page="keywords">
+                    <span>🔑</span> 危险关键词
+                </a>
+                <a href="#" class="nav-item" data-page="questionnaires">
+                    <span>📋</span> 测评题库
+                </a>
+                <a href="#" class="nav-item" data-page="users">
+                    <span>👥</span> 账号管理
+                </a>
+                <a href="/index.html" class="nav-item back-btn">
+                    <span>🏠</span> 返回首页
+                </a>
+            </nav>
+            <div class="user-panel">
+                <div class="current-user">
+                    <span class="user-icon">👑</span>
+                    <div class="user-details">
+                        <div class="user-name" id="currentAdminName">admin</div>
+                        <div class="user-role">管理员</div>
+                    </div>
+                </div>
+                <button class="btn btn-logout" id="logoutAdminBtn">🚪 退出登录</button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 数据概览 -->
+            <section class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <h1>📊 数据概览</h1>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalConversations">0</div>
+                            <div class="stat-label">总对话数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon">💡</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalPresetQA">0</div>
+                            <div class="stat-label">预设问答</div>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalAbnormal">0</div>
+                            <div class="stat-label">异常记录</div>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="resolvedAbnormal">0</div>
+                            <div class="stat-label">已处理异常</div>
+                        </div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon">🔑</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalKeywords">0</div>
+                            <div class="stat-label">危险关键词</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions-section">
+                    <h3>数据管理</h3>
+                    <button class="btn btn-danger" id="cleanupBtn">🗑️ 清理旧数据</button>
+                    <button class="btn btn-secondary" id="exportDataBtn">📥 导出数据</button>
+                </div>
+            </section>
+
+            <!-- 预设问答管理 -->
+            <section class="page" id="page-preset-qa">
+                <div class="page-header">
+                    <h1>💡 预设问答管理</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addPresetQABtn">➕ 新增问答</button>
+                    </div>
+                </div>
+                
+                <!-- 添加/编辑表单 -->
+                <div class="preset-qa-form" id="presetQAForm" style="display:none;">
+                    <div class="form-header">
+                        <h3 id="formTitle">新增预设问答</h3>
+                        <button class="close-btn" id="closeFormBtn">✕</button>
+                    </div>
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label>问题（用户可能问的问题）</label>
+                            <input type="text" id="qaQuestion" placeholder="例如：你叫什么名字？">
+                        </div>
+                        <div class="form-group">
+                            <label>触发关键词（用户消息包含这些关键词时触发，逗号分隔）</label>
+                            <input type="text" id="qaKeywords" placeholder="例如：名字,你叫,姓名">
+                            <small class="form-hint">留空则使用问题作为关键词</small>
+                        </div>
+                        <div class="form-group">
+                            <label>AI回答内容</label>
+                            <textarea id="qaAnswer" rows="4" placeholder="预设的回答内容..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="qaEnabled" checked>
+                                <span>启用此问答</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn btn-secondary" id="cancelFormBtn">取消</button>
+                        <button class="btn btn-primary" id="saveFormBtn">保存</button>
+                    </div>
+                </div>
+
+                <!-- 问答列表 -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>问题</th>
+                                <th>关键词</th>
+                                <th>回答</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presetQATable">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 对话记录 -->
+            <section class="page" id="page-conversations">
+                <div class="page-header">
+                    <h1>💬 对话记录</h1>
+                    <div class="header-actions">
+                        <input type="text" id="searchInput" placeholder="🔍 搜索对话内容...">
+                        <button class="btn btn-primary" id="refreshConversationsBtn">🔄 刷新</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>账号</th>
+                                <th>类型</th>
+                                <th>内容</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conversationsTable">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 异常记录 -->
+            <section class="page" id="page-abnormal">
+                <div class="page-header">
+                    <h1>⚠️ 异常记录</h1>
+                    <div class="header-actions">
+                        <select id="abnormalFilter">
+                            <option value="all">全部</option>
+                            <option value="unresolved">未处理</option>
+                            <option value="resolved">已处理</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>账号</th>
+                                <th>消息内容</th>
+                                <th>危险关键词</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="abnormalTable">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 危险关键词 -->
+            <section class="page" id="page-keywords">
+                <div class="page-header">
+                    <h1>🔑 危险关键词管理</h1>
+                </div>
+                <div class="keywords-section">
+                    <div class="add-keyword">
+                        <input type="text" id="newKeywordInput" placeholder="输入新的危险关键词...">
+                        <button class="btn btn-primary" id="addKeywordBtn">➕ 添加</button>
+                    </div>
+                    <div class="keyword-list" id="keywordList">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 测评题库 -->
+            <section class="page" id="page-questionnaires">
+                <div class="page-header">
+                    <h1>📋 测评题库管理</h1>
+                    <div class="header-actions">
+                        <select id="questionnaireSelect">
+                            <option value="depression">抑郁自评量表 (PHQ-9)</option>
+                            <option value="anxiety">焦虑自评量表 (GAD-7)</option>
+                        </select>
+                        <button class="btn btn-primary" id="addQuestionBtn">➕ 添加题目</button>
+                    </div>
+                </div>
+                <div class="questionnaire-editor" id="questionnaireEditor">
+                    <!-- 动态生成题目编辑器 -->
+                </div>
+            </section>
+
+            <!-- 测评记录 -->
+            <section class="page" id="page-assessments">
+                <div class="page-header">
+                    <h1>📝 测评记录</h1>
+                    <div class="header-actions">
+                        <select id="assessmentFilter">
+                            <option value="all">全部测评</option>
+                            <option value="depression">抑郁测评</option>
+                            <option value="anxiety">焦虑测评</option>
+                        </select>
+                        <button class="btn btn-primary" id="refreshAssessmentsBtn">🔄 刷新</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>账号</th>
+                                <th>测评类型</th>
+                                <th>得分</th>
+                                <th>等级</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assessmentsTable">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 账号管理 -->
+            <section class="page" id="page-users">
+                <div class="page-header">
+                    <h1>👥 账号管理</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addUserBtn">➕ 新增账号</button>
+                    </div>
+                </div>
+
+                <!-- 添加用户表单 -->
+                <div class="preset-qa-form" id="userForm" style="display:none;">
+                    <div class="form-header">
+                        <h3 id="userFormTitle">新增账号</h3>
+                        <button class="close-btn" id="closeUserFormBtn">✕</button>
+                    </div>
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label>账号</label>
+                            <input type="text" id="userUsername" placeholder="例如：12345678900000">
+                            <small class="form-hint">默认密码将自动设为账号后6位</small>
+                        </div>
+                        <div class="form-group">
+                            <label>角色</label>
+                            <select id="userRole">
+                                <option value="user">普通用户</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="userInfo" style="display:none;">
+                            <label>默认密码</label>
+                            <input type="text" id="defaultPassword" readonly>
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <button class="btn btn-secondary" id="cancelUserBtn">取消</button>
+                        <button class="btn btn-primary" id="saveUserBtn">保存</button>
+                    </div>
+                </div>
+
+                <!-- 用户列表 -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>账号</th>
+                                <th>角色</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 通用弹窗 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">标题</h2>
+                <button class="close-btn" id="closeModalBtn">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                内容
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModalBtn">取消</button>
+                <button class="btn btn-primary" id="confirmModalBtn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast" style="display:none;"></div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
