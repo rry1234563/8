@@ -1,99 +1,140 @@
-# AI问答助手 - 虚拟人物问答工具
+# accepts
 
-一个基于Node.js的虚拟人物AI问答助手，支持语音交互、心理测评和后台管理。
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Downloads][npm-downloads-image]][npm-url]
+[![Node.js Version][node-version-image]][node-version-url]
+[![Build Status][github-actions-ci-image]][github-actions-ci-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
 
-## 功能特性
+Higher level content negotiation based on [negotiator](https://www.npmjs.com/package/negotiator).
+Extracted from [koa](https://www.npmjs.com/package/koa) for general use.
 
-1. **数字人形象动画** - 使用GIF图片展示待机动画和说话动画
-2. **智能聊天** - 用户与AI助手进行对话
-3. **语音输入** - 使用麦克风进行语音输入
-4. **语音播报** - AI回复支持语音播报
-5. **心理测评** - 内置抑郁和焦虑自评量表
-6. **异常检测** - 自动检测危险关键词并告警
-7. **后台管理** - 管理对话记录、异常记录、关键词库和测评题库
-8. **数据持久化** - 所有数据保存到本地
+In addition to negotiator, it allows:
 
-## 快速开始
+- Allows types as an array or arguments list, ie `(['text/html', 'application/json'])`
+  as well as `('text/html', 'application/json')`.
+- Allows type shorthands such as `json`.
+- Returns `false` when no types match
+- Treats non-existent headers as `*`
 
-### 1. 安装依赖
+## Installation
 
-```bash
-npm install
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```sh
+$ npm install accepts
 ```
 
-### 2. 放置数字人GIF图片
+## API
 
-将您的数字人形象GIF图片放到 `public/assets/` 目录下：
-- `idle.gif` - 待机动画
-- `speaking.gif` - 说话动画
-
-### 3. 启动服务器
-
-```bash
-npm start
+```js
+var accepts = require('accepts')
 ```
 
-### 4. 访问应用
+### accepts(req)
 
-- 主页：http://localhost:3000
-- 后台管理：http://localhost:3000/admin.html
+Create a new `Accepts` object for the given `req`.
 
-## 项目结构
+#### .charset(charsets)
 
+Return the first accepted charset. If nothing in `charsets` is accepted,
+then `false` is returned.
+
+#### .charsets()
+
+Return the charsets that the request accepts, in the order of the client's
+preference (most preferred first).
+
+#### .encoding(encodings)
+
+Return the first accepted encoding. If nothing in `encodings` is accepted,
+then `false` is returned.
+
+#### .encodings()
+
+Return the encodings that the request accepts, in the order of the client's
+preference (most preferred first).
+
+#### .language(languages)
+
+Return the first accepted language. If nothing in `languages` is accepted,
+then `false` is returned.
+
+#### .languages()
+
+Return the languages that the request accepts, in the order of the client's
+preference (most preferred first).
+
+#### .type(types)
+
+Return the first accepted type (and it is returned as the same text as what
+appears in the `types` array). If nothing in `types` is accepted, then `false`
+is returned.
+
+The `types` array can contain full MIME types or file extensions. Any value
+that is not a full MIME types is passed to `require('mime-types').lookup`.
+
+#### .types()
+
+Return the types that the request accepts, in the order of the client's
+preference (most preferred first).
+
+## Examples
+
+### Simple type negotiation
+
+This simple example shows how to use `accepts` to return a different typed
+respond body based on what the client wants to accept. The server lists it's
+preferences in order and will get back the best match between the client and
+server.
+
+```js
+var accepts = require('accepts')
+var http = require('http')
+
+function app (req, res) {
+  var accept = accepts(req)
+
+  // the order of this list is significant; should be server preferred order
+  switch (accept.type(['json', 'html'])) {
+    case 'json':
+      res.setHeader('Content-Type', 'application/json')
+      res.write('{"hello":"world!"}')
+      break
+    case 'html':
+      res.setHeader('Content-Type', 'text/html')
+      res.write('<b>hello, world!</b>')
+      break
+    default:
+      // the fallback is text/plain, so no need to specify it above
+      res.setHeader('Content-Type', 'text/plain')
+      res.write('hello, world!')
+      break
+  }
+
+  res.end()
+}
+
+http.createServer(app).listen(3000)
 ```
-├── server.js          # 后端服务器
-├── package.json       # 项目配置
-├── data/              # 数据存储目录
-│   ├── conversations.json    # 对话记录
-│   ├── abnormal.json         # 异常记录
-│   ├── danger_keywords.json  # 危险关键词库
-│   └── questionnaires.json   # 测评题库
-└── public/            # 前端静态文件
-    ├── index.html     # 主页面
-    ├── admin.html     # 后台管理页面
-    ├── css/
-    │   ├── style.css  # 主页面样式
-    │   └── admin.css  # 后台管理样式
-    ├── js/
-    │   ├── app.js     # 主页面逻辑
-    │   └── admin.js   # 后台管理逻辑
-    └── assets/        # 图片资源
-        ├── idle.gif   # 待机动画（需自行放置）
-        └── speaking.gif # 说话动画（需自行放置）
+
+You can test this out with the cURL program:
+```sh
+curl -I -H'Accept: text/html' http://localhost:3000/
 ```
 
-## API接口
+## License
 
-### 聊天相关
-- `POST /api/chat` - 发送消息获取AI回答
-- `GET /api/conversations` - 获取对话历史
-- `DELETE /api/conversations/:id` - 删除对话记录
+[MIT](LICENSE)
 
-### 异常检测
-- `GET /api/abnormal` - 获取异常记录
-- `PUT /api/abnormal/:id/resolve` - 标记异常为已处理
-
-### 关键词管理
-- `GET /api/danger-keywords` - 获取危险关键词库
-- `POST /api/danger-keywords` - 更新关键词库
-
-### 测评相关
-- `GET /api/questionnaires` - 获取测评题库
-- `POST /api/questionnaires` - 更新题库
-- `POST /api/assessment` - 提交测评答案
-
-### 数据管理
-- `POST /api/cleanup` - 清理旧数据
-
-## 技术栈
-
-- **后端**: Node.js + Express
-- **前端**: 原生HTML/CSS/JavaScript
-- **语音**: Web Speech API
-- **存储**: JSON文件
-
-## 注意事项
-
-1. 语音功能需要使用Chrome或Edge浏览器
-2. 首次使用需要允许麦克风权限
-3. 建议使用HTTPS部署以确保语音功能正常工作
+[coveralls-image]: https://badgen.net/coveralls/c/github/jshttp/accepts/master
+[coveralls-url]: https://coveralls.io/r/jshttp/accepts?branch=master
+[github-actions-ci-image]: https://badgen.net/github/checks/jshttp/accepts/master?label=ci
+[github-actions-ci-url]: https://github.com/jshttp/accepts/actions/workflows/ci.yml
+[node-version-image]: https://badgen.net/npm/node/accepts
+[node-version-url]: https://nodejs.org/en/download
+[npm-downloads-image]: https://badgen.net/npm/dm/accepts
+[npm-url]: https://npmjs.org/package/accepts
+[npm-version-image]: https://badgen.net/npm/v/accepts
